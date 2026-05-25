@@ -351,7 +351,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
               <Image
                 source={{
-                  uri: userAvatar || "",
+                  uri: userAvatar || "https://via.placeholder.com/150",
                 }}
                 style={styles.profile}
               />

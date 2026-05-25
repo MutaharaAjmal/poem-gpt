@@ -1,5 +1,5 @@
+import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -80,10 +80,7 @@ export default function SettingsScreen() {
   );
 
   return (
-    <LinearGradient
-      colors={["#0F1021", "#1A1B3A", "#2A1458"]}
-      style={styles.container}
-    >
+    <ScreenWrapper>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -184,7 +181,7 @@ export default function SettingsScreen() {
           <Text style={styles.versionText}>PoemGPT Engine v2.5.0</Text>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </ScreenWrapper>
   );
 }
 

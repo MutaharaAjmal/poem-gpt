@@ -1,3 +1,4 @@
+import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { supabase } from "@/src/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -127,10 +128,11 @@ export default function HistoryScreen() {
   );
 
   return (
-    <LinearGradient
-      colors={["#0F1021", "#1A1B3A", "#2A1458"]}
-      style={styles.container}
-    >
+    // <LinearGradient
+    //   colors={["#0F1021", "#1A1B3A", "#2A1458"]}
+    //   style={styles.container}
+    // >
+    <ScreenWrapper>
       <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
         {/* HEADER */}
         <View style={styles.header}>
@@ -202,7 +204,9 @@ export default function HistoryScreen() {
           />
         )}
       </SafeAreaView>
-    </LinearGradient>
+    </ScreenWrapper>
+
+    // </LinearGradient>
   );
 }
 

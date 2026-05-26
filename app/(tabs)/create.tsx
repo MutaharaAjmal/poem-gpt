@@ -1,3 +1,4 @@
+import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { supabase } from "@/src/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -13,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import ResultView from "../../components/ui/ResultView";
 const GEMINI_API_KEY = "AIzaSyA9s7GxYJ-R0o04r221kc3nWp0jYTBc4a4";
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -334,313 +334,311 @@ export default function CreateStoryScreen() {
   }
 
   return (
-    <LinearGradient colors={["#1E3A8A", "#0F172A"]} style={styles.container}>
-      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <Text style={styles.heading}>Story Factory 🦄</Text>
-            <Text style={styles.subheading}>
-              Tap the big colorful magic cards to design your custom fairytale
-              world!
-            </Text>
-          </View>
-
-          {/* INPUT 1: TITLE */}
-          <Text style={styles.sectionLabel}>🌟 Name Your Story</Text>
-          <View style={styles.inputWrapper}>
-            <Ionicons
-              name="book"
-              size={22}
-              color="#F472B6"
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="e.g., Tiger's Secret Spaceship 🐯"
-              placeholderTextColor="rgba(255,255,255,0.35)"
-              value={title}
-              onChangeText={setTitle}
-            />
-          </View>
-
-          {/* CATEGORY SELECTOR (MOOD) */}
-          <Text style={styles.sectionLabel}>🎭 Select Story Vibe</Text>
-          <View style={styles.gridRow}>
-            {moods.map((m) => {
-              const isActive = mood === m.id;
-              return (
-                <TouchableOpacity
-                  key={m.id}
-                  style={[
-                    styles.bigCard,
-                    isActive && {
-                      borderColor: m.color,
-                      backgroundColor: "rgba(255,255,255,0.12)",
-                    },
-                  ]}
-                  onPress={() => setMood(m.id)}
-                >
-                  <View style={[styles.iconBox, { backgroundColor: m.color }]}>
-                    <Ionicons name={m.icon as any} size={22} color="#fff" />
-                  </View>
-                  <Text style={styles.cardTitle}>{m.label}</Text>
-                  <Text style={styles.cardDesc}>{m.desc}</Text>
-                  {isActive && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={18}
-                      color={m.color}
-                      style={styles.checkIcon}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* CHARACTER SELECTOR */}
-          <Text style={styles.sectionLabel}>🦖 Choose Your Main Hero</Text>
-          <View style={styles.gridRow}>
-            {characters.map((c) => {
-              const isActive = character === c.id;
-              return (
-                <TouchableOpacity
-                  key={c.id}
-                  style={[
-                    styles.threeColumnCard,
-                    isActive && {
-                      borderColor: c.color,
-                      backgroundColor: "rgba(255,255,255,0.12)",
-                    },
-                  ]}
-                  onPress={() => setCharacter(c.id)}
-                >
-                  <View
-                    style={[
-                      styles.iconBox,
-                      {
-                        backgroundColor: c.color,
-                        width: 34,
-                        height: 34,
-                        borderRadius: 10,
-                      },
-                    ]}
-                  >
-                    <Ionicons name={c.icon as any} size={18} color="#fff" />
-                  </View>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
-                    {c.label}
-                  </Text>
-                  <Text style={styles.cardDesc} numberOfLines={1}>
-                    {c.desc}
-                  </Text>
-                  {isActive && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={14}
-                      color={c.color}
-                      style={styles.checkIcon}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* LANGUAGE SELECTOR */}
-          <Text style={styles.sectionLabel}>🗣️ Story Language</Text>
-          <View style={styles.gridRow}>
-            {languages.map((l) => {
-              const isActive = lang === l.id;
-              return (
-                <TouchableOpacity
-                  key={l.id}
-                  style={[
-                    styles.bigCard,
-                    isActive && {
-                      borderColor: l.color,
-                      backgroundColor: "rgba(255,255,255,0.12)",
-                    },
-                  ]}
-                  onPress={() => setLang(l.id)}
-                >
-                  <View style={[styles.iconBox, { backgroundColor: l.color }]}>
-                    <Ionicons name={l.icon as any} size={22} color="#fff" />
-                  </View>
-                  <Text style={styles.cardTitle}>{l.label}</Text>
-                  <Text style={styles.cardDesc}>{l.desc}</Text>
-                  {isActive && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={18}
-                      color={l.color}
-                      style={styles.checkIcon}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* LENGTH SELECTOR */}
-          <Text style={styles.sectionLabel}>📏 Book Length</Text>
-          <View style={styles.gridRow}>
-            {lengths.map((len) => {
-              const isActive = length === len.val;
-              return (
-                <TouchableOpacity
-                  key={len.val}
-                  style={[
-                    styles.threeColumnCard,
-                    isActive && {
-                      borderColor: len.color,
-                      backgroundColor: "rgba(255,255,255,0.12)",
-                    },
-                  ]}
-                  onPress={() => setLength(len.val)}
-                >
-                  <View
-                    style={[
-                      styles.iconBox,
-                      {
-                        backgroundColor: len.color,
-                        width: 34,
-                        height: 34,
-                        borderRadius: 10,
-                      },
-                    ]}
-                  >
-                    <Ionicons name={len.icon as any} size={18} color="#fff" />
-                  </View>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
-                    {len.label}
-                  </Text>
-                  <Text style={styles.cardDesc} numberOfLines={1}>
-                    {len.desc}
-                  </Text>
-                  {isActive && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={14}
-                      color={len.color}
-                      style={styles.checkIcon}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* NEW SECTION: IMAGE TYPE SELECTION (FREE vs PREMIUM) */}
-          <Text style={styles.sectionLabel}>🖼️ Story Illustration Mode</Text>
-          <View style={styles.gridRow}>
-            {/* Free Option Card */}
-            <TouchableOpacity
-              style={[
-                styles.bigCard,
-                imageType === "free" && {
-                  borderColor: "#10B981",
-                  backgroundColor: "rgba(255,255,255,0.12)",
-                },
-              ]}
-              onPress={() => handleImageTypePress("free")}
-            >
-              <View style={[styles.iconBox, { backgroundColor: "#10B981" }]}>
-                <Ionicons name="image" size={22} color="#fff" />
-              </View>
-              <Text style={styles.cardTitle}>Standard Book</Text>
-              <Text style={styles.cardDesc}>Free Dummy Cover</Text>
-              {imageType === "free" && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={18}
-                  color="#10B981"
-                  style={styles.checkIcon}
-                />
-              )}
-            </TouchableOpacity>
-
-            {/* Premium Option Card with Crown */}
-            <TouchableOpacity
-              style={[
-                styles.bigCard,
-                imageType === "premium" && {
-                  borderColor: "#F59E0B",
-                  backgroundColor: "rgba(255,255,255,0.12)",
-                },
-              ]}
-              onPress={() => handleImageTypePress("premium")}
-            >
-              <View style={[styles.iconBox, { backgroundColor: "#F59E0B" }]}>
-                <Ionicons name="star" size={22} color="#fff" />
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={styles.cardTitle}>AI Magic Illustration</Text>
-              </View>
-              <Text
-                style={[
-                  styles.cardDesc,
-                  { color: "#FBBF24", fontWeight: "700" },
-                ]}
-              >
-                👑 Premium Mode Only
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* INPUT 5: PROMPT */}
-          <Text style={styles.sectionLabel}>
-            🔮 What happens next? (Your Twist)
+    // <LinearGradient colors={["#1E3A8A", "#0F172A"]} style={styles.container}>
+    <ScreenWrapper>
+      {/* <SafeAreaView style={{ flex: 1 }} edges={["top"]}> */}
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.heading}>Story Factory 🦄</Text>
+          <Text style={styles.subheading}>
+            Tap the big colorful magic cards to design your custom fairytale
+            world!
           </Text>
-          <View style={[styles.inputWrapper, styles.textAreaWrapper]}>
-            <Ionicons
-              name="sparkles"
-              size={22}
-              color="#8B5CF6"
-              style={[styles.inputIcon, { marginTop: 14 }]}
-            />
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="e.g., They find a talking tree that gives them secret chocolate powers!"
-              placeholderTextColor="rgba(255,255,255,0.35)"
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              value={prompt}
-              onChangeText={setPrompt}
-            />
-          </View>
+        </View>
 
-          {/* ULTRA PREMIUM CAST BUTTON */}
+        {/* INPUT 1: TITLE */}
+        <Text style={styles.sectionLabel}>🌟 Name Your Story</Text>
+        <View style={styles.inputWrapper}>
+          <Ionicons
+            name="book"
+            size={22}
+            color="#F472B6"
+            style={styles.inputIcon}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="e.g., Tiger's Secret Spaceship 🐯"
+            placeholderTextColor="rgba(255,255,255,0.35)"
+            value={title}
+            onChangeText={setTitle}
+          />
+        </View>
+
+        {/* CATEGORY SELECTOR (MOOD) */}
+        <Text style={styles.sectionLabel}>🎭 Select Story Vibe</Text>
+        <View style={styles.gridRow}>
+          {moods.map((m) => {
+            const isActive = mood === m.id;
+            return (
+              <TouchableOpacity
+                key={m.id}
+                style={[
+                  styles.bigCard,
+                  isActive && {
+                    borderColor: m.color,
+                    backgroundColor: "rgba(255,255,255,0.12)",
+                  },
+                ]}
+                onPress={() => setMood(m.id)}
+              >
+                <View style={[styles.iconBox, { backgroundColor: m.color }]}>
+                  <Ionicons name={m.icon as any} size={22} color="#fff" />
+                </View>
+                <Text style={styles.cardTitle}>{m.label}</Text>
+                <Text style={styles.cardDesc}>{m.desc}</Text>
+                {isActive && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={18}
+                    color={m.color}
+                    style={styles.checkIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* CHARACTER SELECTOR */}
+        <Text style={styles.sectionLabel}>🦖 Choose Your Main Hero</Text>
+        <View style={styles.gridRow}>
+          {characters.map((c) => {
+            const isActive = character === c.id;
+            return (
+              <TouchableOpacity
+                key={c.id}
+                style={[
+                  styles.threeColumnCard,
+                  isActive && {
+                    borderColor: c.color,
+                    backgroundColor: "rgba(255,255,255,0.12)",
+                  },
+                ]}
+                onPress={() => setCharacter(c.id)}
+              >
+                <View
+                  style={[
+                    styles.iconBox,
+                    {
+                      backgroundColor: c.color,
+                      width: 34,
+                      height: 34,
+                      borderRadius: 10,
+                    },
+                  ]}
+                >
+                  <Ionicons name={c.icon as any} size={18} color="#fff" />
+                </View>
+                <Text style={styles.cardTitle} numberOfLines={1}>
+                  {c.label}
+                </Text>
+                <Text style={styles.cardDesc} numberOfLines={1}>
+                  {c.desc}
+                </Text>
+                {isActive && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={14}
+                    color={c.color}
+                    style={styles.checkIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* LANGUAGE SELECTOR */}
+        <Text style={styles.sectionLabel}>🗣️ Story Language</Text>
+        <View style={styles.gridRow}>
+          {languages.map((l) => {
+            const isActive = lang === l.id;
+            return (
+              <TouchableOpacity
+                key={l.id}
+                style={[
+                  styles.bigCard,
+                  isActive && {
+                    borderColor: l.color,
+                    backgroundColor: "rgba(255,255,255,0.12)",
+                  },
+                ]}
+                onPress={() => setLang(l.id)}
+              >
+                <View style={[styles.iconBox, { backgroundColor: l.color }]}>
+                  <Ionicons name={l.icon as any} size={22} color="#fff" />
+                </View>
+                <Text style={styles.cardTitle}>{l.label}</Text>
+                <Text style={styles.cardDesc}>{l.desc}</Text>
+                {isActive && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={18}
+                    color={l.color}
+                    style={styles.checkIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* LENGTH SELECTOR */}
+        <Text style={styles.sectionLabel}>📏 Book Length</Text>
+        <View style={styles.gridRow}>
+          {lengths.map((len) => {
+            const isActive = length === len.val;
+            return (
+              <TouchableOpacity
+                key={len.val}
+                style={[
+                  styles.threeColumnCard,
+                  isActive && {
+                    borderColor: len.color,
+                    backgroundColor: "rgba(255,255,255,0.12)",
+                  },
+                ]}
+                onPress={() => setLength(len.val)}
+              >
+                <View
+                  style={[
+                    styles.iconBox,
+                    {
+                      backgroundColor: len.color,
+                      width: 34,
+                      height: 34,
+                      borderRadius: 10,
+                    },
+                  ]}
+                >
+                  <Ionicons name={len.icon as any} size={18} color="#fff" />
+                </View>
+                <Text style={styles.cardTitle} numberOfLines={1}>
+                  {len.label}
+                </Text>
+                <Text style={styles.cardDesc} numberOfLines={1}>
+                  {len.desc}
+                </Text>
+                {isActive && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={14}
+                    color={len.color}
+                    style={styles.checkIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* NEW SECTION: IMAGE TYPE SELECTION (FREE vs PREMIUM) */}
+        <Text style={styles.sectionLabel}>🖼️ Story Illustration Mode</Text>
+        <View style={styles.gridRow}>
+          {/* Free Option Card */}
           <TouchableOpacity
-            style={styles.buttonContainer}
-            onPress={handleCreateStory}
-            activeOpacity={0.85}
+            style={[
+              styles.bigCard,
+              imageType === "free" && {
+                borderColor: "#10B981",
+                backgroundColor: "rgba(255,255,255,0.12)",
+              },
+            ]}
+            onPress={() => handleImageTypePress("free")}
           >
-            <LinearGradient
-              colors={["#EC4899", "#8B5CF6"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.gradientBtn}
-            >
-              <View style={styles.btnContent}>
-                <Ionicons
-                  name="color-wand"
-                  size={24}
-                  color="#fff"
-                  style={{ marginRight: 12 }}
-                />
-                <Text style={styles.btnText}>Cast Story Spell 🪄</Text>
-              </View>
-            </LinearGradient>
+            <View style={[styles.iconBox, { backgroundColor: "#10B981" }]}>
+              <Ionicons name="image" size={22} color="#fff" />
+            </View>
+            <Text style={styles.cardTitle}>Standard Book</Text>
+            <Text style={styles.cardDesc}>Free Dummy Cover</Text>
+            {imageType === "free" && (
+              <Ionicons
+                name="checkmark-circle"
+                size={18}
+                color="#10B981"
+                style={styles.checkIcon}
+              />
+            )}
           </TouchableOpacity>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+
+          {/* Premium Option Card with Crown */}
+          <TouchableOpacity
+            style={[
+              styles.bigCard,
+              imageType === "premium" && {
+                borderColor: "#F59E0B",
+                backgroundColor: "rgba(255,255,255,0.12)",
+              },
+            ]}
+            onPress={() => handleImageTypePress("premium")}
+          >
+            <View style={[styles.iconBox, { backgroundColor: "#F59E0B" }]}>
+              <Ionicons name="star" size={22} color="#fff" />
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.cardTitle}>AI Magic Illustration</Text>
+            </View>
+            <Text
+              style={[styles.cardDesc, { color: "#FBBF24", fontWeight: "700" }]}
+            >
+              👑 Premium Mode Only
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* INPUT 5: PROMPT */}
+        <Text style={styles.sectionLabel}>
+          🔮 What happens next? (Your Twist)
+        </Text>
+        <View style={[styles.inputWrapper, styles.textAreaWrapper]}>
+          <Ionicons
+            name="sparkles"
+            size={22}
+            color="#8B5CF6"
+            style={[styles.inputIcon, { marginTop: 14 }]}
+          />
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="e.g., They find a talking tree that gives them secret chocolate powers!"
+            placeholderTextColor="rgba(255,255,255,0.35)"
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+            value={prompt}
+            onChangeText={setPrompt}
+          />
+        </View>
+
+        {/* ULTRA PREMIUM CAST BUTTON */}
+        <TouchableOpacity
+          style={styles.buttonContainer}
+          onPress={handleCreateStory}
+          activeOpacity={0.85}
+        >
+          <LinearGradient
+            colors={["#EC4899", "#8B5CF6"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientBtn}
+          >
+            <View style={styles.btnContent}>
+              <Ionicons
+                name="color-wand"
+                size={24}
+                color="#fff"
+                style={{ marginRight: 12 }}
+              />
+              <Text style={styles.btnText}>Cast Story Spell 🪄</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </ScrollView>
+      {/* </SafeAreaView> */}
+    </ScreenWrapper>
   );
 }
 

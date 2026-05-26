@@ -4,7 +4,6 @@ import { useAudioPlayer } from "expo-audio";
 import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { CreatorSection } from "./components/CreatorSection";
 import { HomeHeader } from "./components/HomeHeader";
 import { MusicPill } from "./components/MusicPill";
@@ -194,26 +193,26 @@ export default function HomeScreen() {
 
   return (
     <ScreenWrapper>
-      <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        >
-          <HomeHeader avatar={userAvatar} />
-          <CreatorSection
-            loading={loadingCreators}
-            data={dbCreators}
-            onPress={(id) => router.push(`/creator/${id}`)}
-          />
-          <StoryGrid
-            loading={loading}
-            data={dbStories}
-            onPress={(id) => router.push(`/story/${id}`)}
-          />
-        </ScrollView>
+      {/* <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}> */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        <HomeHeader avatar={userAvatar} />
+        <CreatorSection
+          loading={loadingCreators}
+          data={dbCreators}
+          onPress={(id) => router.push(`/creator/${id}`)}
+        />
+        <StoryGrid
+          loading={loading}
+          data={dbStories}
+          onPress={(id) => router.push(`/story/${id}`)}
+        />
+      </ScrollView>
 
-        <MusicPill isMuted={isMuted} onPress={toggleMusic} />
-      </SafeAreaView>
+      <MusicPill isMuted={isMuted} onPress={toggleMusic} />
+      {/* </SafeAreaView> */}
     </ScreenWrapper>
   );
 }

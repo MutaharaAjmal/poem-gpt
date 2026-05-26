@@ -14,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
@@ -133,77 +132,74 @@ export default function HistoryScreen() {
     //   style={styles.container}
     // >
     <ScreenWrapper>
-      <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
-        {/* HEADER */}
-        <View style={styles.header}>
-          <Text style={styles.heading}>Library History</Text>
-          <Text style={styles.subheading}>
-            Your collection of public and AI generated magical books
+      {/* <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}> */}
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Text style={styles.heading}>Library History</Text>
+        <Text style={styles.subheading}>
+          Your collection of public and AI generated magical books
+        </Text>
+      </View>
+
+      {/* PREMIUM TAB FILTERS */}
+      <View style={styles.tabRow}>
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            activeTab === "all" && styles.activeTabButton,
+          ]}
+          onPress={() => setActiveTab("all")}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "all" && styles.activeTabText,
+            ]}
+          >
+            All Stories
           </Text>
-        </View>
-
-        {/* PREMIUM TAB FILTERS */}
-        <View style={styles.tabRow}>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === "all" && styles.activeTabButton,
-            ]}
-            onPress={() => setActiveTab("all")}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            activeTab === "ai" && styles.activeTabButton,
+          ]}
+          onPress={() => setActiveTab("ai")}
+        >
+          <Text
+            style={[styles.tabText, activeTab === "ai" && styles.activeTabText]}
           >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "all" && styles.activeTabText,
-              ]}
-            >
-              All Stories
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === "ai" && styles.activeTabButton,
-            ]}
-            onPress={() => setActiveTab("ai")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "ai" && styles.activeTabText,
-              ]}
-            >
-              My AI Creations
-            </Text>
-          </TouchableOpacity>
-        </View>
+            My AI Creations
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-        {/* LOADING & LIST */}
-        {loading ? (
-          <View style={styles.centered}>
-            <ActivityIndicator size="large" color="#8B5CF6" />
-          </View>
-        ) : stories.length === 0 ? (
-          <View style={styles.centered}>
-            <Ionicons
-              name="book-outline"
-              size={50}
-              color="rgba(255,255,255,0.2)"
-            />
-            <Text style={styles.emptyText}>No stories found here yet!</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={stories}
-            keyExtractor={(item) => item.id}
-            renderItem={renderStoryCard}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 40 }}
+      {/* LOADING & LIST */}
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#8B5CF6" />
+        </View>
+      ) : stories.length === 0 ? (
+        <View style={styles.centered}>
+          <Ionicons
+            name="book-outline"
+            size={50}
+            color="rgba(255,255,255,0.2)"
           />
-        )}
-      </SafeAreaView>
+          <Text style={styles.emptyText}>No stories found here yet!</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={stories}
+          keyExtractor={(item) => item.id}
+          renderItem={renderStoryCard}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        />
+      )}
+      {/* </SafeAreaView> */}
     </ScreenWrapper>
 
     // </LinearGradient>

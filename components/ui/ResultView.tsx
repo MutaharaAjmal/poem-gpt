@@ -31,7 +31,6 @@ export default function ResultView({
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
         >
-          {/* Animated Success Badge Layout */}
           <View style={styles.resultHeader}>
             <View style={styles.successBadge}>
               <Ionicons name="star" size={16} color="#FFD700" />
@@ -41,11 +40,9 @@ export default function ResultView({
             </View>
           </View>
 
-          {/* Premium Digital Kids Book Title Frame */}
           <Text style={styles.resultBookTitle}>✨ {title} ✨</Text>
           <View style={styles.dividerAccent} />
 
-          {/* Story Paragraph Cards - Kids Readable Font & Spacing */}
           <View style={styles.storyBodyContainer}>
             {generatedStoryParagraphs.map((para, idx) => (
               <LinearGradient
@@ -62,7 +59,6 @@ export default function ResultView({
             ))}
           </View>
 
-          {/* Action Footer Controls */}
           <View style={styles.footerRow}>
             <TouchableOpacity
               style={[styles.footerBtn, styles.secondaryBtn]}

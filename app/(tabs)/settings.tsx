@@ -1,10 +1,10 @@
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
+import { supabase } from "@/src/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
-  Dimensions,
   ScrollView,
   StyleSheet,
   Switch,
@@ -13,8 +13,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const { width } = Dimensions.get("window");
 
 export default function SettingsScreen() {
   const [isPushEnabled, setIsPushEnabled] = useState(true);
@@ -27,13 +25,21 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleLogout = () => {
-    Alert.alert("Logout 🚪", "Are you sure you want to sign out?", [
+  const handleLogout = async () => {
+    Alert.alert("Sign Out 🚪", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Logout",
+        text: "Sign Out",
         style: "destructive",
-        onPress: () => Alert.alert("User logged out"),
+        onPress: async () => {
+          try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            router.replace("/(auth)/login");
+          } catch (error: any) {
+            Alert.alert("Error", error.message);
+          }
+        },
       },
     ]);
   };
@@ -94,7 +100,6 @@ export default function SettingsScreen() {
             </Text>
           </View>
 
-          {/* ACCOUNT SECTION */}
           <Text style={styles.sectionLabel}>Account Profile</Text>
           <View style={styles.cardContainer}>
             <SettingRow
@@ -131,7 +136,7 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
             <SettingRow
               icon="color-filter-outline"
-              title="Kids Safe Filter"
+              title="Background Music"
               subtitle="Strictly restrict AI content to PG clean stories"
               rightElement={
                 <Switch

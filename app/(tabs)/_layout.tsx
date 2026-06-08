@@ -1,8 +1,7 @@
-import { View } from "@/components/Themed";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function TabLayout() {
   return (
@@ -135,7 +134,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   prominentButtonActive: {
-    backgroundColor: "#8B5CF6", // Jab active hoga toh aapka pasandida color show hoga
+    backgroundColor: "#8B5CF6",
     shadowColor: "#8B5CF6",
   },
 });

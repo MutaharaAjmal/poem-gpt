@@ -5,7 +5,6 @@ import * as Speech from "expo-speech";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,8 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const { width } = Dimensions.get("window");
 
 export default function AudioReaderScreen() {
   const [text, setText] = useState("");

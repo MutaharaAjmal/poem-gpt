@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 10,
   },
-  // profile: { width: 45, height: 45, borderRadius: 25 },
   profile: {
     width: 55,
     height: 55,

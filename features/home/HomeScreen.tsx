@@ -14,6 +14,7 @@ interface StoryItem {
   author: string;
   image_url: string;
 }
+
 interface CreatorItem {
   id: string;
   creator_name: string;
@@ -27,18 +28,18 @@ export default function HomeScreen() {
   const [dbStories, setDbStories] = useState<StoryItem[]>([]);
   const [dbCreators, setDbCreators] = useState<CreatorItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingCreators, setLoadingCreators] = useState(true); // Nayi state
+  const [loadingCreators, setLoadingCreators] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const glowAnim = useRef(new Animated.Value(0)).current;
 
   const star1Anim = useRef(new Animated.Value(0.2)).current;
   const star2Anim = useRef(new Animated.Value(0.1)).current;
-  const star3Anim = useRef(new Animated.Value(0.3)).current; // Naya animation ref mazeed stars ke liye
+  const star3Anim = useRef(new Animated.Value(0.3)).current;
 
   // Audio setup
   const player = useAudioPlayer(require("@/assets/audio/bg_music.mp3"));
-  player.loop = true;
+  // player.loop = true;
   player.volume = 0.2;
 
   const toggleMusic = () => {
@@ -54,6 +55,7 @@ export default function HomeScreen() {
   // Twinkle/Blink Animation Functions
   const startStarBlinking = () => {
     // Star Group 1 Loop
+
     Animated.loop(
       Animated.sequence([
         Animated.timing(star1Anim, {
@@ -118,7 +120,6 @@ export default function HomeScreen() {
     }
   };
   useEffect(() => {
-    // Background Glow Animation Loop
     Animated.loop(
       Animated.sequence([
         Animated.timing(glowAnim, {
@@ -193,7 +194,6 @@ export default function HomeScreen() {
 
   return (
     <ScreenWrapper>
-      {/* <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}> */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}

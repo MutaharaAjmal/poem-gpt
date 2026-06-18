@@ -1,45 +1,46 @@
-import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { supabase } from "@/src/utils/supabase";
 import { useAudioPlayer } from "expo-audio";
 import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, ScrollView } from "react-native";
+import {
+  ActivityIndicator,
+  Animated,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { CreatorSection } from "./components/CreatorSection";
 import { HomeHeader } from "./components/HomeHeader";
 import { MusicPill } from "./components/MusicPill";
 import { StoryGrid } from "./components/StoryGrid";
-interface StoryItem {
-  id: string;
-  title: string;
-  author: string;
-  image_url: string;
-}
 
-interface CreatorItem {
-  id: string;
-  creator_name: string;
-  story_name: string;
-  image_url: string;
-}
 export default function HomeScreen() {
   const router = useRouter();
   const navigation = useNavigation();
 
-  const [dbStories, setDbStories] = useState<StoryItem[]>([]);
-  const [dbCreators, setDbCreators] = useState<CreatorItem[]>([]);
+  // State
+  const [data, setData] = useState<any[]>([]);
+  const [dbCreators, setDbCreators] = useState<any[]>([]);
+  const [filter, setFilter] = useState<"all" | "story" | "poem">("all");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadingCreators, setLoadingCreators] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
-  const glowAnim = useRef(new Animated.Value(0)).current;
 
+  // Animations
+  const glowAnim = useRef(new Animated.Value(0)).current;
   const star1Anim = useRef(new Animated.Value(0.2)).current;
   const star2Anim = useRef(new Animated.Value(0.1)).current;
   const star3Anim = useRef(new Animated.Value(0.3)).current;
 
   // Audio setup
   const player = useAudioPlayer(require("@/assets/audio/bg_music.mp3"));
-  // player.loop = true;
   player.volume = 0.2;
 
   const toggleMusic = () => {
@@ -52,167 +53,158 @@ export default function HomeScreen() {
     }
   };
 
-  // Twinkle/Blink Animation Functions
   const startStarBlinking = () => {
-    // Star Group 1 Loop
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(star1Anim, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(star1Anim, {
-          toValue: 0.2,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-
-    // Star Group 2 Loop (Delayed pattern)
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(star2Anim, {
-          toValue: 0.9,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(star2Anim, {
-          toValue: 0.1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(star3Anim, {
-          toValue: 1,
-          duration: 900,
-          useNativeDriver: true,
-        }),
-        Animated.timing(star3Anim, {
-          toValue: 0.3,
-          duration: 900,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
+    [star1Anim, star2Anim, star3Anim].forEach((anim, i) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 900 + i * 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim, {
+            toValue: 0.2,
+            duration: 900 + i * 300,
+            useNativeDriver: true,
+          }),
+        ]),
+      ).start();
+    });
   };
-  const fetchUserAvatar = async () => {
+
+  const fetchUserData = async () => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
     if (session) {
-      // Agar aapne 'profiles' table banayi hai jahan avatar url store hai
       const { data } = await supabase
         .from("profiles")
         .select("avatar_url")
         .eq("id", session.user.id)
         .single();
-
-      if (data?.avatar_url) {
-        setUserAvatar(data.avatar_url);
-      }
+      if (data?.avatar_url) setUserAvatar(data.avatar_url);
     }
   };
+
+  const fetchContent = async () => {
+    setLoading(true);
+    const [{ data: stories }, { data: poems }, { data: creators }] =
+      await Promise.all([
+        supabase.from("stories").select("id, title, author, image_url"),
+        supabase.from("poems").select("id, title, author, image_url"),
+        supabase
+          .from("creators")
+          .select("id, creator_name, story_name, image_url"),
+      ]);
+
+    const combined = [
+      ...(stories?.map((s) => ({ ...s, type: "story" })) || []),
+      ...(poems?.map((p) => ({ ...p, type: "poem" })) || []),
+    ];
+    setData(combined);
+    setDbCreators(creators || []);
+    setLoading(false);
+    setLoadingCreators(false);
+  };
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await fetchContent();
+    setRefreshing(false);
+  }, []);
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 2500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowAnim, {
-          toValue: 0,
-          duration: 2500,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-
-    // Trigger Stars Blinking
     startStarBlinking();
-    fetchCreatorsFromSupabase();
-    fetchUserAvatar();
-    fetchStoriesFromSupabase();
+    fetchUserData();
+    fetchContent();
 
-    // Sound logic
-    if (!isMuted) {
-      player.play();
-    }
-
-    const unsubscribeBlur = navigation.addListener("blur", () => {
-      player.pause();
-    });
-
+    const unsubscribeBlur = navigation.addListener("blur", () =>
+      player.pause(),
+    );
     const unsubscribeFocus = navigation.addListener("focus", () => {
-      if (!isMuted) {
-        player.play();
-      }
+      if (!isMuted) player.play();
     });
 
     return () => {
       unsubscribeBlur();
       unsubscribeFocus();
     };
-  }, [isMuted]);
-  const fetchCreatorsFromSupabase = async () => {
-    setLoadingCreators(true);
-    try {
-      const { data, error } = await supabase
-        .from("creators")
-        .select("id, creator_name, story_name, image_url");
+  }, []);
 
-      if (error) throw error;
-      setDbCreators(data || []);
-    } catch (error: any) {
-      console.error("Creators fetch error:", error.message);
-    } finally {
-      setLoadingCreators(false);
-    }
-  };
-  const fetchStoriesFromSupabase = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("stories")
-        .select("id, title, author, image_url");
-
-      if (error) throw error;
-      setDbStories(data || []);
-    } catch (error: any) {
-      console.error("Home fetch error:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredData = data.filter(
+    (item) => filter === "all" || item.type === filter,
+  );
 
   return (
     <ScreenWrapper>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 50 }}
+        refreshControl={
+          // <--- Add this block
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#8B5CF6"
+            colors={["#8B5CF6"]}
+          />
+        }
       >
         <HomeHeader avatar={userAvatar} />
+
         <CreatorSection
           loading={loadingCreators}
           data={dbCreators}
-          onPress={(id) => router.push(`/creator/${id}`)}
+          onPress={(id) => router.push(`/creator/${id}` as any)}
         />
-        <StoryGrid
-          loading={loading}
-          data={dbStories}
-          onPress={(id) => router.push(`/story/${id}`)}
-        />
-      </ScrollView>
 
+        {/* Filter Tabs */}
+        <View style={styles.filterContainer}>
+          {(["all", "story", "poem"] as const).map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setFilter(tab)}
+              style={[styles.tab, filter === tab && styles.activeTab]}
+            >
+              <Text
+                style={[styles.tabText, filter === tab && styles.activeTabText]}
+              >
+                {tab.toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#8B5CF6" />
+        ) : (
+          <StoryGrid
+            loading={loading}
+            data={filteredData}
+            onPress={(id: string, type: string) => {
+              const path = type === "story" ? `/story/${id}` : `/poems/${id}`;
+              router.push(`${path}?type=public` as any);
+            }}
+          />
+        )}
+      </ScrollView>
       <MusicPill isMuted={isMuted} onPress={toggleMusic} />
-      {/* </SafeAreaView> */}
     </ScreenWrapper>
   );
 }
+
+const styles = StyleSheet.create({
+  filterContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 10,
+    marginVertical: 15,
+  },
+  tab: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#eee",
+  },
+  activeTab: { backgroundColor: "#8B5CF6" },
+  tabText: { color: "#666", fontWeight: "bold" },
+  activeTabText: { color: "#fff" },
+});

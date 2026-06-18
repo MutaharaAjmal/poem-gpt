@@ -24,7 +24,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function DetailScreen() {
-  const { id } = useLocalSearchParams();
+  const { id, type } = useLocalSearchParams();
+
   const { width, height } = useWindowDimensions();
   const router = useRouter();
   const navigation = useNavigation();
@@ -68,7 +69,10 @@ export default function DetailScreen() {
   // ── Initial setup ───────────────────────────────────────────
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-    if (id) fetchStoryData();
+    if (id && type) {
+      // id ke sath type ka hona bhi zaroori hai
+      fetchStoryData();
+    }
     if (bgPlayer && musicVolumeLevel !== 0) bgPlayer.play();
 
     return () => {
@@ -126,30 +130,71 @@ export default function DetailScreen() {
     if (slides.length > 0 && isVoicePlaying) playVoiceOver();
   }, [currentIndex, slides]);
 
-  // ── Data fetch ──────────────────────────────────────────────
   const fetchStoryData = async () => {
     try {
       setLoading(true);
+
+      // 1. Table decide karein
+      let tableName = "";
+      if (type === "ai") {
+        tableName = window.location.pathname.includes("poems")
+          ? "mypoems"
+          : "mystories";
+      } else {
+        tableName = "stories";
+      }
+
       const { data, error } = await supabase
-        .from("stories")
+        .from(tableName)
         .select("*")
         .eq("id", id)
         .single();
+
       if (error) throw error;
 
-      const formatted = data.paragraphs.map((para: string, index: number) => ({
+      // 2. Data ko format karein (Dono cases handle karein)
+      // Agar 'paragraphs' column hai to use karein, warna 'content' string ko array mein badlein
+      const rawContent = data.paragraphs || data.stanzas || [data.content];
+
+      const formatted = rawContent.map((para: string, index: number) => ({
         id: index.toString(),
+        // Agar AI table mein paragraph images nahi hain, to main image use karein
         image_url: data.paragraph_images?.[index] ?? data.image_url,
         paragraph_en: para,
         paragraph_ur: data.paragraphs_ur?.[index] ?? "",
       }));
+
       setSlides(formatted);
     } catch (e) {
-      console.error(e);
+      console.error("Fetch Error:", e);
     } finally {
       setLoading(false);
     }
   };
+  // ── Data fetch ──────────────────────────────────────────────
+  // const fetchStoryData = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const { data, error } = await supabase
+  //       .from("stories")
+  //       .select("*")
+  //       .eq("id", id)
+  //       .single();
+  //     if (error) throw error;
+
+  //     const formatted = data.paragraphs.map((para: string, index: number) => ({
+  //       id: index.toString(),
+  //       image_url: data.paragraph_images?.[index] ?? data.image_url,
+  //       paragraph_en: para,
+  //       paragraph_ur: data.paragraphs_ur?.[index] ?? "",
+  //     }));
+  //     setSlides(formatted);
+  //   } catch (e) {
+  //     console.error(e);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // ── Highlight timer ─────────────────────────────────────────
   const startHighlightTimer = (text: string, rate: number) => {
@@ -343,7 +388,6 @@ export default function DetailScreen() {
             ? currentSlide.paragraph_en
             : currentSlide.paragraph_ur || currentSlide.paragraph_en
         }
-        // isRtl={langConfig.isRtl}
         currentWordIndex={currentWordIndex}
       />
     </View>

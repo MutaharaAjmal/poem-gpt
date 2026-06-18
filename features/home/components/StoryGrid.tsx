@@ -10,9 +10,9 @@ import {
 } from "react-native";
 
 interface StoryGridProps {
-  loading: boolean;
+  loading?: boolean;
   data: any[];
-  onPress: (id: string) => void;
+  onPress: (id: string, type: string) => void;
 }
 
 export const StoryGrid = ({ loading, data, onPress }: StoryGridProps) => {
@@ -35,7 +35,8 @@ export const StoryGrid = ({ loading, data, onPress }: StoryGridProps) => {
             <TouchableOpacity
               key={item.id}
               style={styles.storyCard}
-              onPress={() => onPress(item.id)}
+              // onPress={() => onPress(item.id)}
+              onPress={() => onPress(item.id, item.type)}
             >
               <Image
                 source={{ uri: item.image_url }}

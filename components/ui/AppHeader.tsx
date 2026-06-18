@@ -1,84 +1,50 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface AppHeaderProps {
   title: string;
-  subtitle?: string;
-  showAvatar?: boolean;
+  onBack?: () => void;
 }
 
-export default function AppHeader({
-  title,
-  subtitle,
-  showAvatar = true,
-}: AppHeaderProps) {
-  return (
-    <View style={styles.headerContainer}>
-      <View style={styles.textContainer}>
-        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-        <Text style={styles.title}>{title}</Text>
-      </View>
+export default function AppHeader({ title, onBack }: AppHeaderProps) {
+  const router = useRouter();
 
-      {showAvatar && (
-        <TouchableOpacity style={styles.avatarButton}>
-          <Image
-            source={{
-              uri: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
-            }}
-            style={styles.avatar}
-          />
-          <View style={styles.badge} />
-        </TouchableOpacity>
-      )}
+  return (
+    <View style={styles.header}>
+      <TouchableOpacity
+        onPress={onBack || (() => router.back())}
+        style={styles.backBtn}
+      >
+        <Ionicons name="arrow-back" size={24} color="#8B5CF6" />
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>{title}</Text>
+      <View style={{ width: 40 }} />
+      {/* Header ko center karne ke liye spacer */}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
+  header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 15,
-    backgroundColor: "#FAFAFE",
+    paddingVertical: 15,
+    // backgroundColor: "#FFFFFF", // Aapka preferred clean white background
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#F1F5F9",
   },
-  textContainer: {
-    flex: 1,
+  backBtn: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: "#bfcddb",
   },
-  subtitle: {
-    fontSize: 13,
-    color: "#8B5CF6",
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 2,
-  },
-  title: {
-    fontSize: 26,
+  headerTitle: {
+    fontSize: 20,
     fontWeight: "800",
-    color: "#1F2937",
-  },
-  avatarButton: {
-    position: "relative",
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: "#8B5CF6",
-  },
-  badge: {
-    position: "absolute",
-    right: 1,
-    bottom: 1,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: "#10B981",
-    borderWidth: 2,
-    borderColor: "#FFF",
+    color: "#8B5CF6", // Aapka selected color #1E3A8A
   },
 });

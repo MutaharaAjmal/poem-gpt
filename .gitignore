@@ -31,6 +31,9 @@ yarn-error.*
 *.pem
 
 # local env files
+# Secret Files
+.env
+.env.*
 .env*.local
 
 # typescript

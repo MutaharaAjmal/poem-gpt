@@ -1,3 +1,4 @@
+import AppHeader from "@/components/ui/AppHeader";
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { supabase } from "@/src/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
@@ -87,6 +88,8 @@ export default function SettingsScreen() {
 
   return (
     <ScreenWrapper>
+      <AppHeader title="App Settings " />
+
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -94,7 +97,6 @@ export default function SettingsScreen() {
         >
           {/* HEADER */}
           <View style={styles.header}>
-            <Text style={styles.heading}>App Settings</Text>
             <Text style={styles.subheading}>
               Customize your magical AI story experience
             </Text>
@@ -192,7 +194,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 40 },
+  scrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
   header: { marginBottom: 30 },
   heading: {
     color: "#fff",
@@ -200,7 +202,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 0.5,
   },
-  subheading: { color: "#B8B8D2", fontSize: 14, marginTop: 8, lineHeight: 22 },
+  subheading: { color: "#B8B8D2", fontSize: 14, lineHeight: 22 },
 
   sectionLabel: {
     color: "#8B5CF6",

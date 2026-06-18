@@ -1,5 +1,6 @@
 import CustomButton from "@/components/ui/CustomButton";
 import CustomInput from "@/components/ui/CustomInput";
+import { useAppStore } from "@/src/store/useAppStore";
 import { supabase } from "@/src/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -14,7 +15,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  const setUser = useAppStore((state: any) => state.setUser);
   useEffect(() => {
     const checkSession = async () => {
       const {
@@ -44,11 +45,20 @@ export default function LoginScreen() {
         });
 
         if (error) throw error;
-
-        if (data.session) {
+        if (data.user) {
+          setUser({
+            username: data.user.email?.split("@")[0] || "User",
+            avatar: "https://ui-avatars.com/api/?name=" + data.user.email,
+            email: data.user.email || "",
+          });
           Alert.alert("Success 🎉", "Account created and logged in!");
           router.replace("/(tabs)");
-        } else {
+        }
+        // if (data.session) {
+        //   Alert.alert("Success 🎉", "Account created and logged in!");
+        //   router.replace("/(tabs)");
+        // }
+        else {
           Alert.alert(
             "Check Email 📧",
             "Please check your inbox for the confirmation link!",

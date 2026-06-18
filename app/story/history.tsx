@@ -1,3 +1,4 @@
+import AppHeader from "@/components/ui/AppHeader";
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { supabase } from "@/src/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,110 +18,132 @@ import {
 
 const { width } = Dimensions.get("window");
 
-interface StoryItem {
+interface ContentItem {
   id: string;
   title: string;
-  author?: string;
   image_url: string;
-  tags?: string[];
-  isAIGenerated?: boolean;
+  category: "story" | "poems";
+  isAIGenerated: boolean;
 }
 
 export default function HistoryScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const [stories, setStories] = useState<StoryItem[]>([]);
+  const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "ai">("all");
-  useEffect(() => {
-    fetchAllStories(activeTab);
 
-    const unsubscribe = navigation.addListener("focus", () => {
-      fetchAllStories(activeTab);
-    });
-    return unsubscribe;
-  }, [navigation, activeTab]);
+  const fetchData = async () => {
+    setLoading(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  // FIXED: Accepts currentTab directly to completely bypass async state delay
-  const fetchAllStories = async (currentTab: "all" | "ai") => {
-    try {
-      setLoading(true);
-      let combinedData: StoryItem[] = [];
+    let combinedData: ContentItem[] = [];
 
-      // 1. Always Fetch from 'mystories' (AI Creations)
-      const { data: myData, error: myError } = await supabase
-        .from("mystories")
-        .select("id, title, image_url, tags")
-        .order("created_at", { ascending: false });
+    if (user) {
+      const [{ data: stories }, { data: poems }] = await Promise.all([
+        supabase
+          .from("mystories")
+          .select("id, title, image_url")
+          .eq("user_id", user.id),
+        supabase
+          .from("mypoems")
+          .select("id, title, image_url")
+          .eq("user_id", user.id),
+      ]);
 
-      if (!myError && myData) {
-        const formattedMyData = myData.map((item) => ({
-          ...item,
-          author: "Me (AI)",
-          isAIGenerated: true,
-        }));
-        combinedData = [...combinedData, ...formattedMyData];
-      }
-
-      // 2. FIXED: Fetch from normal 'stories' table only if current tab context is 'all'
-      if (currentTab === "all") {
-        const { data: publicData, error: publicError } = await supabase
-          .from("stories")
-          .select("id, title, author, image_url, tags");
-
-        if (!publicError && publicData) {
-          const formattedPublicData = publicData.map((item) => ({
-            ...item,
-            isAIGenerated: false,
-          }));
-          // Merge both arrays seamlessly
-          combinedData = [...combinedData, ...formattedPublicData];
-        }
-      }
-
-      setStories(combinedData);
-    } catch (error) {
-      console.error("Error fetching history:", error);
-    } finally {
-      setLoading(false);
+      if (stories)
+        combinedData.push(
+          ...stories.map((i) => ({
+            ...i,
+            category: "story" as const,
+            isAIGenerated: true,
+          })),
+        );
+      if (poems)
+        combinedData.push(
+          ...poems.map((i) => ({
+            ...i,
+            category: "poems" as const,
+            isAIGenerated: true,
+          })),
+        );
     }
+
+    // 2. Public Content (Sirf 'All' tab ke liye)
+    if (activeTab === "all") {
+      // Yahan hum public 'stories' AUR 'poems' dono la rahe hain
+      const [{ data: pubStories }, { data: pubPoems }] = await Promise.all([
+        supabase.from("stories").select("id, title, image_url"),
+        supabase.from("poems").select("id, title, image_url"), // 'poems' table ka naam check kar lein
+      ]);
+
+      if (pubStories)
+        combinedData.push(
+          ...pubStories.map((i) => ({
+            ...i,
+            category: "story" as const,
+            isAIGenerated: false,
+          })),
+        );
+
+      if (pubPoems)
+        combinedData.push(
+          ...pubPoems.map((i) => ({
+            ...i,
+            category: "poems" as const,
+            isAIGenerated: false,
+          })),
+        );
+    }
+
+    setItems(combinedData.sort((a, b) => b.id.localeCompare(a.id)));
+    setLoading(false);
   };
 
-  const handleStoryPress = (item: StoryItem) => {
-    const storyType = item.isAIGenerated ? "ai" : "public";
-    router.push(`/story/${item.id}?type=${storyType}` as any);
-  };
+  useEffect(() => {
+    fetchData();
+    const unsubscribe = navigation.addListener("focus", fetchData);
+    return unsubscribe;
+  }, [activeTab]);
 
-  const renderStoryCard = ({ item }: { item: StoryItem }) => (
+  const renderCard = ({ item }: { item: ContentItem }) => (
     <TouchableOpacity
       style={styles.card}
-      activeOpacity={0.85}
-      onPress={() => handleStoryPress(item)}
+      onPress={() => {
+        router.push(
+          `/${item.category}/${item.id}?type=${item.isAIGenerated ? "ai" : "public"}` as any,
+        );
+      }}
     >
       <Image source={{ uri: item.image_url }} style={styles.cardImage} />
       <LinearGradient
-        colors={["transparent", "rgba(15, 16, 33, 0.9)"]}
-        style={styles.cardOverlay}
+        colors={["transparent", "rgba(0,0,0,0.8)"]}
+        style={styles.overlay}
       />
-      <View style={styles.cardContent}>
-        {item.isAIGenerated && (
-          <View style={styles.aiBadge}>
-            <Ionicons
-              name="sparkles"
-              size={10}
-              color="#fff"
-              style={{ marginRight: 4 }}
-            />
-            <Text style={styles.aiBadgeText}>AI Story</Text>
-          </View>
-        )}
-        <Text style={styles.cardTitle} numberOfLines={2}>
-          {item.title}
-        </Text>
 
-        <Text style={styles.cardAuthor}>
-          {/* {item.author || "Unknown"} */}
-          {item.author === "Me (AI)" ? "By Me" : item.author}
+      <View style={styles.cardContent}>
+        <View
+          style={[
+            styles.badge,
+            {
+              backgroundColor:
+                item.category === "story" ? "#8B5CF6" : "#06B6D4",
+            },
+          ]}
+        >
+          <Ionicons
+            name={item.category === "story" ? "book" : "pencil"}
+            size={10}
+            color="#fff"
+          />
+          <Text style={styles.badgeText}>
+            {item.category === "story" ? " Story" : " Poem"}
+          </Text>
+        </View>
+        <Text style={styles.title} numberOfLines={2}>
+          {item.title}
         </Text>
       </View>
     </TouchableOpacity>
@@ -128,135 +151,60 @@ export default function HistoryScreen() {
 
   return (
     <ScreenWrapper>
-      <View style={styles.header}>
-        <Text style={styles.heading}>Library History</Text>
-        <Text style={styles.subheading}>
-          Your collection of public and AI generated magical books
-        </Text>
-      </View>
-
-      {/* PREMIUM TAB FILTERS */}
+      <AppHeader title="My Library" />
       <View style={styles.tabRow}>
         <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === "all" && styles.activeTabButton,
-          ]}
+          style={[styles.tab, activeTab === "all" && styles.activeTab]}
           onPress={() => setActiveTab("all")}
         >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "all" && styles.activeTabText,
-            ]}
-          >
-            All Stories
-          </Text>
+          <Text style={styles.tabText}>All</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === "ai" && styles.activeTabButton,
-          ]}
+          style={[styles.tab, activeTab === "ai" && styles.activeTab]}
           onPress={() => setActiveTab("ai")}
         >
-          <Text
-            style={[styles.tabText, activeTab === "ai" && styles.activeTabText]}
-          >
-            My AI Creations
-          </Text>
+          <Text style={styles.tabText}>My Creations</Text>
         </TouchableOpacity>
       </View>
 
-      {/* LOADING & LIST */}
       {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#8B5CF6" />
-        </View>
-      ) : stories.length === 0 ? (
-        <View style={styles.centered}>
-          <Ionicons
-            name="book-outline"
-            size={50}
-            color="rgba(255,255,255,0.2)"
-          />
-          <Text style={styles.emptyText}>No stories found here yet!</Text>
-        </View>
+        <ActivityIndicator color="#8B5CF6" />
       ) : (
         <FlatList
-          data={stories}
-          keyExtractor={(item) => item.id}
-          renderItem={renderStoryCard}
+          data={items}
+          renderItem={renderCard}
           numColumns={2}
           columnWrapperStyle={styles.row}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          keyExtractor={(i) => i.id}
         />
       )}
-      {/* </SafeAreaView> */}
     </ScreenWrapper>
-
-    // </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  header: { paddingHorizontal: 24, marginTop: 15, marginBottom: 20 },
-  heading: { color: "#fff", fontSize: 28, fontWeight: "900" },
-  subheading: { color: "#B8B8D2", fontSize: 13, marginTop: 5 },
-  tabRow: {
-    flexDirection: "row",
-    paddingHorizontal: 24,
-    marginBottom: 20,
-    gap: 10,
-  },
-  tabButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-  activeTabButton: { backgroundColor: "#8B5CF6", borderColor: "#A855F7" },
-  tabText: { color: "#B8B8D2", fontSize: 13, fontWeight: "600" },
-  activeTabText: { color: "#fff" },
-  row: {
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    marginBottom: 16,
-  },
+  tabRow: { flexDirection: "row", padding: 20, gap: 10 },
+  tab: { padding: 10, borderRadius: 20, backgroundColor: "#333" },
+  activeTab: { backgroundColor: "#8B5CF6" },
+  tabText: { color: "#fff" },
+  row: { justifyContent: "space-between", paddingHorizontal: 20 },
   card: {
-    width: (width - 64) / 2,
-    height: 240,
-    borderRadius: 20,
+    width: (width - 60) / 2,
+    height: 220,
+    borderRadius: 15,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.03)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+    marginBottom: 15,
   },
-  cardImage: { width: "100%", height: "100%", resizeMode: "cover" },
-  cardOverlay: { ...StyleSheet.absoluteFillObject },
-  cardContent: { position: "absolute", bottom: 14, left: 14, right: 14 },
-  cardTitle: { color: "#fff", fontSize: 15, fontWeight: "700", lineHeight: 20 },
-  cardAuthor: { color: "#B8B8D2", fontSize: 11, marginTop: 4 },
-  emptyText: { color: "rgba(255,255,255,0.4)", marginTop: 15, fontSize: 14 },
-  aiBadge: {
+  cardImage: { width: "100%", height: "100%" },
+  overlay: { ...StyleSheet.absoluteFillObject },
+  cardContent: { position: "absolute", bottom: 10, left: 10 },
+  badge: {
     flexDirection: "row",
-    alignItems: "center",
+    padding: 4,
+    borderRadius: 5,
     alignSelf: "flex-start",
-    backgroundColor: "rgba(139, 92, 246, 0.8)",
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-    borderRadius: 6,
-    marginBottom: 6,
+    marginBottom: 5,
   },
-  aiBadgeText: {
-    color: "#fff",
-    fontSize: 9,
-    fontWeight: "700",
-    textTransform: "uppercase",
-  },
+  badgeText: { color: "#fff", fontSize: 10, fontWeight: "bold" },
+  title: { color: "#fff", fontWeight: "bold" },
 });

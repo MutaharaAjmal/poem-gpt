@@ -10,6 +10,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
+        <Stack.Screen name="poems/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="story/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="creator/[id]" options={{ headerShown: false }} />
         <Stack.Screen

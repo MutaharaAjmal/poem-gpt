@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export type LangKey = "en" | "ur" | "roman" | "hi";
+export type LangKey = "en" | "ur";
 
 export const LANGUAGES: {
   key: LangKey;
@@ -27,22 +27,6 @@ export const LANGUAGES: {
     pitch: 1.0,
     rate: 0.92,
     isRtl: true,
-  },
-  {
-    key: "roman",
-    label: "Roman",
-    ttsCode: "ur-PK",
-    pitch: 1.0,
-    rate: 0.9,
-    isRtl: false,
-  },
-  {
-    key: "hi",
-    label: "हिंदी",
-    ttsCode: "hi-IN",
-    pitch: 1.0,
-    rate: 0.88,
-    isRtl: false,
   },
 ];
 

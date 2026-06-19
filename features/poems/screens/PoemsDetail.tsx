@@ -33,7 +33,7 @@ export default function PoemDetailScreen() {
   const [isVoicePlaying, setIsVoicePlaying] = useState(true);
   const [musicVolumeLevel, setMusicVolumeLevel] = useState(1);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
-
+  const isSpeakingRef = useRef(false);
   const flatListRef = useRef<FlatList>(null);
   const highlightIntervalRef = useRef<any>(null);
   const bgPlayer = useAudioPlayer(require("@/assets/audio/bg_music.mp3"));
@@ -66,8 +66,11 @@ export default function PoemDetailScreen() {
         playVoice();
       }, 500);
       return () => clearTimeout(timer);
+    } else {
+      Speech.stop();
+      isSpeakingRef.current = false;
     }
-  }, [currentIndex, lang, poem]);
+  }, [currentIndex, lang]);
 
   // ── Animations & Auto-Play ─────────────────────────────────
   useEffect(() => {
@@ -153,13 +156,16 @@ export default function PoemDetailScreen() {
             data.paragraph_images?.[index] ??
             data.image_url,
         }));
-
+        formatted.forEach((slide: any) => {
+          if (slide.image) Image.prefetch(slide.image);
+        });
         setPoem({ ...data, slides: formatted });
       }
     } catch (e) {
       console.error("Error fetching poem:", e);
     }
   };
+  console.log(poem);
 
   const startHighlightTimer = (text: string) => {
     stopHighlightTimer();
@@ -185,15 +191,53 @@ export default function PoemDetailScreen() {
     if (!poem) return;
     const slide = poem.slides[currentIndex];
     const text = lang === "ur" ? slide.text_ur : slide.text_en;
-    startHighlightTimer(text);
+
+    // Audio ko execute karne se pehle previous ko stop karein
+    Speech.stop();
+    isSpeakingRef.current = true; // Flag true karein
+
+    setCurrentWordIndex(0);
+
     Speech.speak(text, {
       language: lang === "ur" ? "ur-PK" : "en-US",
+      onBoundary: (event: any) => {
+        const spokenText = text.substring(0, event.charIndex);
+        const currentWordCount = spokenText.trim().split(/\s+/).length - 1;
+        if (currentWordCount >= 0) setCurrentWordIndex(currentWordCount);
+      },
       onDone: () => {
-        if (currentIndex < poem.slides.length - 1) handleNext();
-        else setIsVoicePlaying(false);
+        if (!isSpeakingRef.current) return;
+
+        isSpeakingRef.current = false;
+        setCurrentWordIndex(-1);
+        // Agar last slide nahi hai, toh next page par jayein
+        if (currentIndex < poem.slides.length - 1) {
+          // Sirf tab call karein jab hum voice mode mein hon
+          handleNext();
+        } else {
+          setIsVoicePlaying(false);
+        }
+      },
+      onError: (err) => {
+        isSpeakingRef.current = false;
+        console.log("TTS Error: ", err);
       },
     });
   };
+
+  // const playVoice = () => {
+  //   if (!poem) return;
+  //   const slide = poem.slides[currentIndex];
+  //   const text = lang === "ur" ? slide.text_ur : slide.text_en;
+  //   startHighlightTimer(text);
+  //   Speech.speak(text, {
+  //     language: lang === "ur" ? "ur-PK" : "en-US",
+  //     onDone: () => {
+  //       if (currentIndex < poem.slides.length - 1) handleNext();
+  //       else setIsVoicePlaying(false);
+  //     },
+  //   });
+  // };
 
   const toggleVoice = () => {
     if (isVoicePlaying) {
@@ -208,8 +252,15 @@ export default function PoemDetailScreen() {
 
   const handleNext = () => {
     if (currentIndex < poem.slides.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
-      setCurrentIndex(currentIndex + 1);
+      isSpeakingRef.current = false; // Flag reset
+      Speech.stop();
+
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+
+      // Auto-play ka trigger yahan se hata dein,
+      // useEffect handle karega
     }
   };
 
@@ -235,6 +286,8 @@ export default function PoemDetailScreen() {
       <FlatList
         ref={flatListRef}
         data={poem.slides}
+        windowSize={5}
+        removeClippedSubviews={true}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}

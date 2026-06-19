@@ -10,6 +10,10 @@ interface AppState {
   user: UserProfile | null;
   setUser: (user: UserProfile | null) => void;
 
+  allContent: any[]; // Stories + Poems ka data
+  setAllContent: (content: any[]) => void;
+  activeStory: any | null;
+  setActiveStory: (story: any | null) => void;
   myStories: any[];
   recommendedStories: any[];
   setMyStories: (stories: any[]) => void;
@@ -21,6 +25,11 @@ export const useAppStore = create<AppState>((set: any) => ({
   setUser: (user: UserProfile | null) =>
     set((state: AppState) => ({ ...state, user })),
 
+  allContent: [],
+  setAllContent: (allContent) => set({ allContent }),
+
+  activeStory: null,
+  setActiveStory: (activeStory) => set({ activeStory }),
   myStories: [],
   recommendedStories: [],
   setMyStories: (myStories: any[]) =>

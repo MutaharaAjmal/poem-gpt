@@ -14,6 +14,7 @@ import {
 } from "react-native";
 
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
+import { useAppStore } from "@/src/store/useAppStore";
 import { CreatorSection } from "./components/CreatorSection";
 import { HomeHeader } from "./components/HomeHeader";
 import { MusicPill } from "./components/MusicPill";
@@ -33,6 +34,8 @@ export default function HomeScreen() {
   const [isMuted, setIsMuted] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
 
+  const setAllContent = useAppStore((state) => state.setAllContent);
+  const setActiveStory = useAppStore((state) => state.setActiveStory);
   // Animations
   const glowAnim = useRef(new Animated.Value(0)).current;
   const star1Anim = useRef(new Animated.Value(0.2)).current;
@@ -42,6 +45,7 @@ export default function HomeScreen() {
   // Audio setup
   const player = useAudioPlayer(require("@/assets/audio/bg_music.mp3"));
   player.volume = 0.2;
+  const playerRef = useRef(player);
 
   const toggleMusic = () => {
     if (player.playing) {
@@ -90,11 +94,9 @@ export default function HomeScreen() {
     setLoading(true);
     const [{ data: stories }, { data: poems }, { data: creators }] =
       await Promise.all([
-        supabase.from("stories").select("id, title, author, image_url"),
-        supabase.from("poems").select("id, title, author, image_url"),
-        supabase
-          .from("creators")
-          .select("id, creator_name, story_name, image_url"),
+        supabase.from("stories").select("*"),
+        supabase.from("poems").select("*"),
+        supabase.from("creators").select("*"),
       ]);
 
     const combined = [
@@ -102,6 +104,7 @@ export default function HomeScreen() {
       ...(poems?.map((p) => ({ ...p, type: "poem" })) || []),
     ];
     setData(combined);
+    setAllContent(combined); // <-- Yahan Store mein save ho gaya!
     setDbCreators(creators || []);
     setLoading(false);
     setLoadingCreators(false);
@@ -116,18 +119,20 @@ export default function HomeScreen() {
     fetchUserData();
     fetchContent();
 
-    const unsubscribeBlur = navigation.addListener("blur", () =>
-      player.pause(),
-    );
+    const unsubscribeBlur = navigation.addListener("blur", () => {
+      playerRef.current.pause();
+    });
     const unsubscribeFocus = navigation.addListener("focus", () => {
-      if (!isMuted) player.play();
+      if (!isMuted) {
+        playerRef.current.play();
+      }
     });
 
     return () => {
       unsubscribeBlur();
       unsubscribeFocus();
     };
-  }, []);
+  }, [isMuted]);
 
   const filteredData = data.filter(
     (item) => filter === "all" || item.type === filter,
@@ -179,8 +184,12 @@ export default function HomeScreen() {
           <StoryGrid
             loading={loading}
             data={filteredData}
-            onPress={(id: string, type: string) => {
-              const path = type === "story" ? `/story/${id}` : `/poems/${id}`;
+            onPress={(item: any) => {
+              setActiveStory(item); // Poora object store mein set ho gaya
+              const path =
+                item.type === "story"
+                  ? `/story/${item.id}`
+                  : `/poems/${item.id}`;
               router.push(`${path}?type=public` as any);
             }}
           />

@@ -12,7 +12,8 @@ import {
 interface StoryGridProps {
   loading?: boolean;
   data: any[];
-  onPress: (id: string, type: string) => void;
+  onPress: (item: any) => void; // string ki jagah 'any' ya aapka Story type
+  // onPress: (id: string, type: string) => void;
 }
 
 export const StoryGrid = ({ loading, data, onPress }: StoryGridProps) => {
@@ -33,10 +34,11 @@ export const StoryGrid = ({ loading, data, onPress }: StoryGridProps) => {
         <View style={styles.grid}>
           {data.map((item) => (
             <TouchableOpacity
-              key={item.id}
+              // key={item.id}
+              key={`${item.id}-${item.type}`}
               style={styles.storyCard}
               // onPress={() => onPress(item.id)}
-              onPress={() => onPress(item.id, item.type)}
+              onPress={() => onPress(item)}
             >
               <Image
                 source={{ uri: item.image_url }}

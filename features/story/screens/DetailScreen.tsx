@@ -5,6 +5,7 @@ import {
 } from "@/features/story/components/StoryHeader";
 import { StoryNavigation } from "@/features/story/components/StoryNavigation";
 import { StorySubtitle } from "@/features/story/components/StorySubTitle";
+import { useAppStore } from "@/src/store/useAppStore";
 import { supabase } from "@/src/utils/supabase";
 import { useAudioPlayer } from "expo-audio";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
@@ -25,6 +26,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function DetailScreen() {
   const { id, type } = useLocalSearchParams();
+  const activeStory = useAppStore((state) => state.activeStory); // Global data
+  console.log(activeStory);
 
   const { width, height } = useWindowDimensions();
   const router = useRouter();
@@ -49,6 +52,35 @@ export default function DetailScreen() {
 
   const bgPlayer = useAudioPlayer(require("@/assets/audio/bg_music.mp3"));
   bgPlayer.loop = true;
+
+  useEffect(() => {
+    if (activeStory) {
+      processData(activeStory);
+    } else {
+      // Fallback agar store khali ho (refresh karne par)
+      fetchStoryData();
+    }
+  }, [activeStory]);
+
+  const processData = (data: any) => {
+    const rawContent =
+      data.paragraphs || data.stanzas || (data.content ? [data.content] : []);
+    const formatted = rawContent.map((para: string, index: number) => {
+      const url = data.paragraph_images?.[index] ?? data.image_url;
+
+      // PRE-FETCHING: Images ko background mein load karein
+      if (url) Image.prefetch(url);
+
+      return {
+        id: index.toString(),
+        image_url: url,
+        paragraph_en: para,
+        paragraph_ur: data.paragraphs_ur?.[index] ?? "",
+      };
+    });
+    setSlides(formatted);
+    setLoading(false);
+  };
 
   // ── Volume control ──────────────────────────────────────────
   useEffect(() => {
@@ -130,19 +162,18 @@ export default function DetailScreen() {
     if (slides.length > 0 && isVoicePlaying) playVoiceOver();
   }, [currentIndex, slides]);
 
+  // ── Data fetch ──────────────────────────────────────────────
+
   const fetchStoryData = async () => {
     try {
       setLoading(true);
 
-      // 1. Table decide karein
-      let tableName = "";
-      if (type === "ai") {
-        tableName = window.location.pathname.includes("poems")
-          ? "mypoems"
-          : "mystories";
-      } else {
-        tableName = "stories";
-      }
+      let tableName =
+        type === "ai"
+          ? window.location.pathname.includes("poems")
+            ? "mypoems"
+            : "mystories"
+          : "stories";
 
       const { data, error } = await supabase
         .from(tableName)
@@ -150,15 +181,20 @@ export default function DetailScreen() {
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase Error:", error);
+        throw error;
+      }
 
-      // 2. Data ko format karein (Dono cases handle karein)
-      // Agar 'paragraphs' column hai to use karein, warna 'content' string ko array mein badlein
-      const rawContent = data.paragraphs || data.stanzas || [data.content];
+      const rawContent =
+        data.paragraphs || data.stanzas || (data.content ? [data.content] : []);
+
+      if (rawContent.length === 0) {
+        console.warn("Content is empty! Check your column names.");
+      }
 
       const formatted = rawContent.map((para: string, index: number) => ({
         id: index.toString(),
-        // Agar AI table mein paragraph images nahi hain, to main image use karein
         image_url: data.paragraph_images?.[index] ?? data.image_url,
         paragraph_en: para,
         paragraph_ur: data.paragraphs_ur?.[index] ?? "",
@@ -166,36 +202,11 @@ export default function DetailScreen() {
 
       setSlides(formatted);
     } catch (e) {
-      console.error("Fetch Error:", e);
+      console.error("Critical Fetch Error:", e);
     } finally {
       setLoading(false);
     }
   };
-  // ── Data fetch ──────────────────────────────────────────────
-  // const fetchStoryData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const { data, error } = await supabase
-  //       .from("stories")
-  //       .select("*")
-  //       .eq("id", id)
-  //       .single();
-  //     if (error) throw error;
-
-  //     const formatted = data.paragraphs.map((para: string, index: number) => ({
-  //       id: index.toString(),
-  //       image_url: data.paragraph_images?.[index] ?? data.image_url,
-  //       paragraph_en: para,
-  //       paragraph_ur: data.paragraphs_ur?.[index] ?? "",
-  //     }));
-  //     setSlides(formatted);
-  //   } catch (e) {
-  //     console.error(e);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   // ── Highlight timer ─────────────────────────────────────────
   const startHighlightTimer = (text: string, rate: number) => {
     stopHighlightTimer();
@@ -227,6 +238,36 @@ export default function DetailScreen() {
   };
 
   // ── Voice over ──────────────────────────────────────────────
+  // const playVoiceOver = () => {
+  //   if (!slides.length) return;
+  //   const currentSlide = slides[currentIndex];
+  //   const langConfig = LANGUAGES.find((l) => l.key === lang) ?? LANGUAGES[0];
+
+  //   const textToSpeak =
+  //     lang === "en"
+  //       ? currentSlide.paragraph_en
+  //       : currentSlide.paragraph_ur || currentSlide.paragraph_en;
+
+  //   startHighlightTimer(textToSpeak, langConfig.rate);
+
+  //   Speech.speak(textToSpeak, {
+  //     language: langConfig.ttsCode,
+  //     pitch: langConfig.pitch,
+  //     rate: langConfig.rate,
+  //     onDone: () => {
+  //       stopHighlightTimer();
+  //       if (currentIndex < slides.length - 1) {
+  //         handleNextPage();
+  //       } else {
+  //         setIsVoicePlaying(false);
+  //       }
+  //     },
+  //     onError: (err) => {
+  //       console.log("TTS Error: ", err);
+  //       stopHighlightTimer();
+  //     },
+  //   });
+  // };
   const playVoiceOver = () => {
     if (!slides.length) return;
     const currentSlide = slides[currentIndex];
@@ -237,24 +278,32 @@ export default function DetailScreen() {
         ? currentSlide.paragraph_en
         : currentSlide.paragraph_ur || currentSlide.paragraph_en;
 
-    startHighlightTimer(textToSpeak, langConfig.rate);
+    const words = textToSpeak.split(" ");
+    setCurrentWordIndex(0); // Start from first word
 
     Speech.speak(textToSpeak, {
       language: langConfig.ttsCode,
       pitch: langConfig.pitch,
       rate: langConfig.rate,
+      // Audio ke sath sync karne ke liye 'onBoundary'
+      onBoundary: (event: any) => {
+        const spokenText = textToSpeak.substring(0, event.charIndex);
+        const currentWordCount = spokenText.trim().split(/\s+/).length - 1;
+
+        // Safety check
+        if (currentWordCount >= 0 && currentWordCount < words.length) {
+          setCurrentWordIndex(currentWordCount);
+        }
+      },
       onDone: () => {
-        stopHighlightTimer();
+        setCurrentWordIndex(-1); // Finish line
         if (currentIndex < slides.length - 1) {
           handleNextPage();
         } else {
           setIsVoicePlaying(false);
         }
       },
-      onError: (err) => {
-        console.log("TTS Error: ", err);
-        stopHighlightTimer();
-      },
+      onError: (err) => console.log("TTS Error: ", err),
     });
   };
 
@@ -319,8 +368,12 @@ export default function DetailScreen() {
       <FlatList
         ref={flatListRef}
         data={slides}
+        initialNumToRender={1}
+        windowSize={5}
+        maxToRenderPerBatch={1}
         horizontal
         pagingEnabled
+        removeClippedSubviews={true} // Screen se bahar wali images ko unmount karega
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id}
         onMomentumScrollEnd={onMomentumScrollEnd}

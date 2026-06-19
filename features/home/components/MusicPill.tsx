@@ -14,7 +14,6 @@ export const MusicPill = ({ isMuted, onPress }: MusicPillProps) => {
       style={styles.musicPill}
       activeOpacity={0.85}
     >
-      {/* Play/Pause circle */}
       <View style={styles.musicPlayBtn}>
         <Ionicons
           name={isMuted ? "pause" : "play"}

@@ -53,19 +53,13 @@ export default function LoginScreen() {
           });
           Alert.alert("Success 🎉", "Account created and logged in!");
           router.replace("/(tabs)");
-        }
-        // if (data.session) {
-        //   Alert.alert("Success 🎉", "Account created and logged in!");
-        //   router.replace("/(tabs)");
-        // }
-        else {
+        } else {
           Alert.alert(
             "Check Email 📧",
             "Please check your inbox for the confirmation link!",
           );
         }
       } else {
-        // --- LOGIN LOGIC ---
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: password,
@@ -129,7 +123,7 @@ export default function LoginScreen() {
           />
 
           <CustomButton
-            title={isSignUp ? "Sign Up 🎉" : "Login 🏃‍♂️"}
+            title={isSignUp ? "Sign Up 🎉" : "Login"}
             loading={loading}
             onPress={handleAuth}
             style={{ marginTop: 15 }}

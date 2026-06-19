@@ -206,17 +206,16 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 120,
   },
-  // storyTitle: { color: "#fff", fontSize: 16 },
   storyTitle: {
     color: "#fff",
     fontSize: 14,
-    padding: 8, // Text ko thoda space dene ke liye
+    padding: 8,
     textAlign: "center",
   },
   tabContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginVertical: 20,
+    marginVertical: 12,
     gap: 10,
   },
   tab: {
@@ -227,7 +226,7 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     backgroundColor: "#8B5CF6", // Purple theme
-    transform: [{ scale: 1.05 }], // Select hone par halka sa zoom
+    transform: [{ scale: 1.05 }],
   },
   tabText: {
     color: "#fff",

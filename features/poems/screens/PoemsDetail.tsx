@@ -74,8 +74,7 @@ export default function PoemDetailScreen() {
 
   // ── Animations & Auto-Play ─────────────────────────────────
   useEffect(() => {
-    if (!poem) return; // Poem load hone ka intezar karein
-
+    if (!poem) return;
     Speech.stop();
     stopHighlightTimer();
     setCurrentWordIndex(-1);
@@ -167,19 +166,6 @@ export default function PoemDetailScreen() {
   };
   console.log(poem);
 
-  const startHighlightTimer = (text: string) => {
-    stopHighlightTimer();
-    const words = text.split(" ");
-    if (!words.length) return;
-    let wordCounter = 0;
-    setCurrentWordIndex(0);
-    highlightIntervalRef.current = setInterval(() => {
-      wordCounter++;
-      if (wordCounter < words.length) setCurrentWordIndex(wordCounter);
-      else stopHighlightTimer();
-    }, 600);
-  };
-
   const stopHighlightTimer = () => {
     if (highlightIntervalRef.current) {
       clearInterval(highlightIntervalRef.current);
@@ -192,9 +178,8 @@ export default function PoemDetailScreen() {
     const slide = poem.slides[currentIndex];
     const text = lang === "ur" ? slide.text_ur : slide.text_en;
 
-    // Audio ko execute karne se pehle previous ko stop karein
     Speech.stop();
-    isSpeakingRef.current = true; // Flag true karein
+    isSpeakingRef.current = true;
 
     setCurrentWordIndex(0);
 
@@ -224,20 +209,6 @@ export default function PoemDetailScreen() {
       },
     });
   };
-
-  // const playVoice = () => {
-  //   if (!poem) return;
-  //   const slide = poem.slides[currentIndex];
-  //   const text = lang === "ur" ? slide.text_ur : slide.text_en;
-  //   startHighlightTimer(text);
-  //   Speech.speak(text, {
-  //     language: lang === "ur" ? "ur-PK" : "en-US",
-  //     onDone: () => {
-  //       if (currentIndex < poem.slides.length - 1) handleNext();
-  //       else setIsVoicePlaying(false);
-  //     },
-  //   });
-  // };
 
   const toggleVoice = () => {
     if (isVoicePlaying) {

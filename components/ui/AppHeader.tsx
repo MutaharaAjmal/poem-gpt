@@ -33,9 +33,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 15,
-    // backgroundColor: "#FFFFFF", // Aapka preferred clean white background
-    // borderBottomWidth: 1,
-    // borderBottomColor: "#F1F5F9",
   },
   backBtn: {
     padding: 8,

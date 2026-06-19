@@ -10,7 +10,7 @@ interface AppState {
   user: UserProfile | null;
   setUser: (user: UserProfile | null) => void;
 
-  allContent: any[]; // Stories + Poems ka data
+  allContent: any[];
   setAllContent: (content: any[]) => void;
   activeStory: any | null;
   setActiveStory: (story: any | null) => void;

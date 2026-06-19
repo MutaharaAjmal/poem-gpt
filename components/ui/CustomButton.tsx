@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#8B5CF6", // New Bright Purple
     paddingVertical: 15,
-    borderRadius: 16, // Pehle se zyada rounded aur modern
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#8B5CF6",

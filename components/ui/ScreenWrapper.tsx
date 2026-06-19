@@ -115,7 +115,6 @@ export default function ScreenWrapper({ children }: ScreenWrapperProps) {
 
       {/* Magical Twinkling Star Layer */}
       {staticStars.map((star, i) => {
-        // Alag alag stars par randomized animation assign karne ke liye
         const assignedOpacity =
           i % 3 === 0 ? star1Anim : i % 3 === 1 ? star2Anim : star3Anim;
         return (

@@ -36,8 +36,6 @@ export default function HomeScreen() {
 
   const setAllContent = useAppStore((state) => state.setAllContent);
   const setActiveStory = useAppStore((state) => state.setActiveStory);
-  // Animations
-  const glowAnim = useRef(new Animated.Value(0)).current;
   const star1Anim = useRef(new Animated.Value(0.2)).current;
   const star2Anim = useRef(new Animated.Value(0.1)).current;
   const star3Anim = useRef(new Animated.Value(0.3)).current;
@@ -185,7 +183,7 @@ export default function HomeScreen() {
             loading={loading}
             data={filteredData}
             onPress={(item: any) => {
-              setActiveStory(item); // Poora object store mein set ho gaya
+              setActiveStory(item);
               const path =
                 item.type === "story"
                   ? `/story/${item.id}`
@@ -208,12 +206,12 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   tab: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: "#eee",
   },
-  activeTab: { backgroundColor: "#8B5CF6" },
+  activeTab: { backgroundColor: "#8B5CF6", transform: [{ scale: 1.05 }] },
   tabText: { color: "#666", fontWeight: "bold" },
   activeTabText: { color: "#fff" },
 });

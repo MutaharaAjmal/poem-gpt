@@ -57,12 +57,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     lineHeight: 26,
   },
-  // ── HIGHLIGHT STYLE TOKENS ───────────────────────────────────
   normalWord: {
     color: "#ffffff",
   },
   highlightedWord: {
-    color: "#FBBF24", // Premium Amber Gold Highlight for better reading visibility
+    color: "#FBBF24",
     textShadowColor: "rgba(251, 191, 36, 0.4)",
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 8,

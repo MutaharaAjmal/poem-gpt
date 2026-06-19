@@ -12,13 +12,6 @@ export const HomeHeader = ({ avatar }: HomeHeaderProps) => {
         <Text style={styles.heading}>Where Stories{"\n"}Made By You</Text>
       </View>
       <View style={styles.headerIcons}>
-        {/* <TouchableOpacity style={styles.iconBtn} onPress={toggleMusic}>
-                <Ionicons
-                  name={isMuted ? "volume-mute" : "volume-high"}
-                  size={22}
-                  color={isMuted ? "#EF4444" : "#10B981"}
-                />
-              </TouchableOpacity> */}
         <Image
           source={{
             uri: avatar || "https://via.placeholder.com/150",

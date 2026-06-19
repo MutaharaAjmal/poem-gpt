@@ -5,8 +5,8 @@ import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface AudioPlayerProps {
   audioUrl: string;
-  onPlayStart?: () => void; // Naya prop: Background music ko slow/pause karne k liye
-  onPlayStop?: () => void; // Naya prop: Background music ko wapas normal karne k liye
+  onPlayStart?: () => void;
+  onPlayStop?: () => void;
 }
 
 export const AudioPlayer = ({
@@ -22,15 +22,14 @@ export const AudioPlayer = ({
       if (isPlaying) {
         await sound.pauseAsync();
         setIsPlaying(false);
-        if (onPlayStop) onPlayStop(); // Background music normal karo
+        if (onPlayStop) onPlayStop();
       } else {
-        if (onPlayStart) onPlayStart(); // Background music slow/pause karo
+        if (onPlayStart) onPlayStart();
         await sound.playAsync();
         setIsPlaying(true);
       }
     } else {
-      // Pehli dafa audio load ho raha hai
-      if (onPlayStart) onPlayStart(); // Background music slow/pause karo
+      if (onPlayStart) onPlayStart();
 
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: audioUrl },
@@ -42,7 +41,7 @@ export const AudioPlayer = ({
       newSound.setOnPlaybackStatusUpdate((status) => {
         if (status.isLoaded && status.didJustFinish) {
           setIsPlaying(false);
-          if (onPlayStop) onPlayStop(); // Background music wapas normal karo
+          if (onPlayStop) onPlayStop();
         }
       });
     }

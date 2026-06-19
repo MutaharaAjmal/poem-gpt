@@ -71,12 +71,10 @@ export default function HistoryScreen() {
         );
     }
 
-    // 2. Public Content (Sirf 'All' tab ke liye)
     if (activeTab === "all") {
-      // Yahan hum public 'stories' AUR 'poems' dono la rahe hain
       const [{ data: pubStories }, { data: pubPoems }] = await Promise.all([
         supabase.from("stories").select("id, title, image_url"),
-        supabase.from("poems").select("id, title, image_url"), // 'poems' table ka naam check kar lein
+        supabase.from("poems").select("id, title, image_url"),
       ]);
 
       if (pubStories)

@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     height: 65,
     borderRadius: 35,
     borderWidth: 3,
-    borderColor: "#8B5CF6", // Aapka pasandida color use kiya yahan
+    borderColor: "#8B5CF6",
   },
   grid: {
     flexDirection: "row",

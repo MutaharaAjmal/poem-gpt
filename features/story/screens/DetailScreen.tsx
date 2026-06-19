@@ -26,7 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function DetailScreen() {
   const { id, type } = useLocalSearchParams();
-  const activeStory = useAppStore((state) => state.activeStory); // Global data
+  const activeStory = useAppStore((state) => state.activeStory);
   console.log(activeStory);
 
   const { width, height } = useWindowDimensions();
@@ -57,7 +57,6 @@ export default function DetailScreen() {
     if (activeStory) {
       processData(activeStory);
     } else {
-      // Fallback agar store khali ho (refresh karne par)
       fetchStoryData();
     }
   }, [activeStory]);
@@ -102,7 +101,6 @@ export default function DetailScreen() {
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     if (id && type) {
-      // id ke sath type ka hona bhi zaroori hai
       fetchStoryData();
     }
     if (bgPlayer && musicVolumeLevel !== 0) bgPlayer.play();
@@ -129,7 +127,6 @@ export default function DetailScreen() {
     return unsub;
   }, [navigation, bgPlayer]);
 
-  // ── Slide change: animation + autoplay ─────────────────────
   useEffect(() => {
     Speech.stop();
     stopHighlightTimer();
@@ -237,37 +234,6 @@ export default function DetailScreen() {
     }
   };
 
-  // ── Voice over ──────────────────────────────────────────────
-  // const playVoiceOver = () => {
-  //   if (!slides.length) return;
-  //   const currentSlide = slides[currentIndex];
-  //   const langConfig = LANGUAGES.find((l) => l.key === lang) ?? LANGUAGES[0];
-
-  //   const textToSpeak =
-  //     lang === "en"
-  //       ? currentSlide.paragraph_en
-  //       : currentSlide.paragraph_ur || currentSlide.paragraph_en;
-
-  //   startHighlightTimer(textToSpeak, langConfig.rate);
-
-  //   Speech.speak(textToSpeak, {
-  //     language: langConfig.ttsCode,
-  //     pitch: langConfig.pitch,
-  //     rate: langConfig.rate,
-  //     onDone: () => {
-  //       stopHighlightTimer();
-  //       if (currentIndex < slides.length - 1) {
-  //         handleNextPage();
-  //       } else {
-  //         setIsVoicePlaying(false);
-  //       }
-  //     },
-  //     onError: (err) => {
-  //       console.log("TTS Error: ", err);
-  //       stopHighlightTimer();
-  //     },
-  //   });
-  // };
   const playVoiceOver = () => {
     if (!slides.length) return;
     const currentSlide = slides[currentIndex];
@@ -279,18 +245,14 @@ export default function DetailScreen() {
         : currentSlide.paragraph_ur || currentSlide.paragraph_en;
 
     const words = textToSpeak.split(" ");
-    setCurrentWordIndex(0); // Start from first word
-
+    setCurrentWordIndex(0);
     Speech.speak(textToSpeak, {
       language: langConfig.ttsCode,
       pitch: langConfig.pitch,
       rate: langConfig.rate,
-      // Audio ke sath sync karne ke liye 'onBoundary'
       onBoundary: (event: any) => {
         const spokenText = textToSpeak.substring(0, event.charIndex);
         const currentWordCount = spokenText.trim().split(/\s+/).length - 1;
-
-        // Safety check
         if (currentWordCount >= 0 && currentWordCount < words.length) {
           setCurrentWordIndex(currentWordCount);
         }
@@ -373,7 +335,7 @@ export default function DetailScreen() {
         maxToRenderPerBatch={1}
         horizontal
         pagingEnabled
-        removeClippedSubviews={true} // Screen se bahar wali images ko unmount karega
+        removeClippedSubviews={true}
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id}
         onMomentumScrollEnd={onMomentumScrollEnd}

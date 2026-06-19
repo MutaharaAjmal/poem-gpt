@@ -12,8 +12,7 @@ import {
 interface StoryGridProps {
   loading?: boolean;
   data: any[];
-  onPress: (item: any) => void; // string ki jagah 'any' ya aapka Story type
-  // onPress: (id: string, type: string) => void;
+  onPress: (item: any) => void;
 }
 
 export const StoryGrid = ({ loading, data, onPress }: StoryGridProps) => {
@@ -34,10 +33,8 @@ export const StoryGrid = ({ loading, data, onPress }: StoryGridProps) => {
         <View style={styles.grid}>
           {data.map((item) => (
             <TouchableOpacity
-              // key={item.id}
               key={`${item.id}-${item.type}`}
               style={styles.storyCard}
-              // onPress={() => onPress(item.id)}
               onPress={() => onPress(item)}
             >
               <Image
@@ -64,7 +61,7 @@ export const StoryGrid = ({ loading, data, onPress }: StoryGridProps) => {
   );
 };
 const styles = StyleSheet.create({
-  section: { marginTop: 30, paddingHorizontal: 20 },
+  section: { marginTop: 10, paddingHorizontal: 20 },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",

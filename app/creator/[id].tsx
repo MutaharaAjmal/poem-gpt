@@ -26,25 +26,31 @@ export default function CreatorProfile() {
   }, [id]);
 
   const [stories, setStories] = useState<any[]>([]); // Multiple stories list
-  //   const [storyId, setStoryId] = useState<string | null>(null);
+  const [poems, setPoems] = useState<any[]>([]); // New state for poems
+  const [activeTab, setActiveTab] = useState<"stories" | "poems">("stories"); // Tab tracking
+
   const fetchCreatorData = async () => {
-    // 1. Fetch Creator Info
     const { data: creatorData } = await supabase
       .from("creators")
       .select("*")
       .eq("id", id)
       .single();
-
     setCreator(creatorData);
 
-    // 2. Fetch ALL stories linked to this creator ID (Relational Query)
     if (creatorData) {
-      const { data: storiesData } = await supabase
-        .from("stories")
-        .select("id, title, image_url")
-        .eq("creator_id", id); // Direct link
-
-      setStories(storiesData || []);
+      // Parallel fetching for performance
+      const [storiesRes, poemsRes] = await Promise.all([
+        supabase
+          .from("stories")
+          .select("id, title, image_url")
+          .eq("creator_id", id),
+        supabase
+          .from("poems")
+          .select("id, title, image_url")
+          .eq("creator_id", id),
+      ]);
+      setStories((storiesRes.data || []).map((s) => ({ ...s, type: "story" })));
+      setPoems((poemsRes.data || []).map((p) => ({ ...p, type: "poem" })));
     }
   };
 
@@ -61,7 +67,10 @@ export default function CreatorProfile() {
       colors={["#0F1021", "#1A1B3A", "#2A1458"]}
       style={styles.container}
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }} // Yahan se space milegi
+      >
         {/* Header Image with Glow */}
         <View style={styles.headerImageContainer}>
           <Image
@@ -97,19 +106,33 @@ export default function CreatorProfile() {
         </View>
 
         <Text style={styles.sectionTitle}>Works by {creator.creator_name}</Text>
-        {/* <TouchableOpacity
-          style={styles.storyCard}
-          onPress={() => router.push(`/story/${item.id}`)}
-        >
-          <Text style={styles.storyTitle}>{creator.story_name}</Text>
-          <Ionicons name="book-outline" size={20} color="#8B5CF6" />
-        </TouchableOpacity> */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "stories" && styles.activeTab]}
+            onPress={() => setActiveTab("stories")}
+          >
+            <Text style={styles.tabText}>Stories ({stories.length})</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "poems" && styles.activeTab]}
+            onPress={() => setActiveTab("poems")}
+          >
+            <Text style={styles.tabText}>Poems ({poems.length})</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.grid}>
-          {stories.map((item) => (
+          {(activeTab === "stories" ? stories : poems).map((item) => (
             <TouchableOpacity
               key={item.id}
               style={styles.storyCard}
-              onPress={() => router.push(`/story/${item.id}`)}
+              onPress={() => {
+                const path =
+                  item.type === "story"
+                    ? `/story/${item.id}`
+                    : `/poems/${item.id}`;
+                router.push(`${path}?type=public` as any);
+              }}
             >
               <Image source={{ uri: item.image_url }} style={styles.cardImg} />
               <Text style={styles.storyTitle} numberOfLines={1}>
@@ -177,10 +200,37 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.05)",
     borderRadius: 20,
     overflow: "hidden",
+    paddingBottom: 10,
   },
   cardImg: {
     width: "100%",
     height: 120,
   },
-  storyTitle: { color: "#fff", fontSize: 16 },
+  // storyTitle: { color: "#fff", fontSize: 16 },
+  storyTitle: {
+    color: "#fff",
+    fontSize: 14,
+    padding: 8, // Text ko thoda space dene ke liye
+    textAlign: "center",
+  },
+  tabContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 20,
+    gap: 10,
+  },
+  tab: {
+    paddingHorizontal: 25,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  activeTab: {
+    backgroundColor: "#8B5CF6", // Purple theme
+    transform: [{ scale: 1.05 }], // Select hone par halka sa zoom
+  },
+  tabText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
 });
